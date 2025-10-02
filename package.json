@@ -1,0 +1,37 @@
+{
+  "name": "aviator-predictor",
+  "version": "1.0.0",
+  "description": "A comprehensive web-based application for managing Aviator game predictions with admin panel and client management",
+  "main": "index.html",
+  "scripts": {
+    "start": "python -m http.server 8000",
+    "serve": "npx http-server -p 8000",
+    "dev": "npx live-server --port=8000"
+  },
+  "keywords": [
+    "aviator",
+    "predictor",
+    "admin-panel",
+    "client-management",
+    "javascript",
+    "html",
+    "css"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/aviator-predictor.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/aviator-predictor/issues"
+  },
+  "homepage": "https://github.com/yourusername/aviator-predictor#readme",
+  "devDependencies": {
+    "http-server": "^14.1.1",
+    "live-server": "^1.2.2"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+} 

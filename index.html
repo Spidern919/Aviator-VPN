@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aviator Predictor</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Login Section -->
+        <div id="loginSection" class="login-section">
+            <div class="login-card">
+                <h2><i class="fas fa-plane"></i> Aviator Predictor</h2>
+                <div class="login-tabs">
+                    <button class="tab-btn active" onclick="showLoginTab('admin')">Admin Login</button>
+                    <button class="tab-btn" onclick="showLoginTab('client')">Client Access</button>
+                </div>
+                
+                <!-- Admin Login -->
+                <div id="adminLogin" class="login-form">
+                    <input type="text" id="adminUsername" placeholder="Admin Username" value="admin">
+                    <input type="password" id="adminPassword" placeholder="Admin Password" value="admin123">
+                    <button onclick="adminLogin()" class="login-btn">Login as Admin</button>
+                </div>
+                
+                <!-- Client Login -->
+                <div id="clientLogin" class="login-form" style="display: none;">
+                    <div class="connection-status">
+                        <span id="connectionStatus" class="status-indicator disconnected">Disconnected</span>
+                    </div>
+                    <button onclick="showClientRegistration()" class="register-btn">Register New Client</button>
+                    <div class="divider">or</div>
+                    <input type="text" id="clientCode" placeholder="Enter Client Code">
+                    <button onclick="clientLogin()" class="login-btn">Connect with Code</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Panel -->
+        <div id="adminPanel" class="admin-panel" style="display: none;">
+            <header class="admin-header">
+                <h1><i class="fas fa-cog"></i> Admin Panel</h1>
+                <button onclick="logout()" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            </header>
+            
+            <div class="admin-content">
+                <div class="sidebar">
+                    <button class="sidebar-btn active" onclick="showAdminSection('dashboard')">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                    </button>
+                    <button class="sidebar-btn" onclick="showAdminSection('clients')">
+                        <i class="fas fa-users"></i> Manage Clients
+                    </button>
+                    <button class="sidebar-btn" onclick="showAdminSection('predictions')">
+                        <i class="fas fa-chart-line"></i> Predictions
+                    </button>
+                    <button class="sidebar-btn" onclick="showAdminSection('settings')">
+                        <i class="fas fa-cog"></i> Settings
+                    </button>
+                    <button class="sidebar-btn" onclick="showAdminSection('database')">
+                        <i class="fas fa-database"></i> Database
+                    </button>
+                </div>
+                
+                <div class="main-content">
+                    <!-- Dashboard Section -->
+                    <div id="dashboardSection" class="admin-section">
+                        <h2>Dashboard</h2>
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <h3>Total Clients</h3>
+                                <p id="totalClients">0</p>
+                            </div>
+                            <div class="stat-card">
+                                <h3>Active Predictions</h3>
+                                <p id="activePredictions">0</p>
+                            </div>
+                            <div class="stat-card">
+                                <h3>Success Rate</h3>
+                                <p id="successRate">0%</p>
+                            </div>
+                            <div class="stat-card">
+                                <h3>Today's Games</h3>
+                                <p id="todayGames">0</p>
+                            </div>
+                        </div>
+                        
+                        <div class="quick-actions">
+                            <h3>Quick Actions</h3>
+                            <button onclick="generateNewPrediction()" class="action-btn">
+                                <i class="fas fa-plus"></i> Generate New Prediction
+                            </button>
+                            <button onclick="addNewClient()" class="action-btn">
+                                <i class="fas fa-user-plus"></i> Add New Client
+                            </button>
+                            <button onclick="viewAllPredictions()" class="action-btn">
+                                <i class="fas fa-list"></i> View All Predictions
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Clients Section -->
+                    <div id="clientsSection" class="admin-section" style="display: none;">
+                        <h2>Manage Clients</h2>
+                        <div class="section-header">
+                            <button onclick="showAddClientModal()" class="add-btn">
+                                <i class="fas fa-plus"></i> Add New Client
+                            </button>
+                        </div>
+                        
+                        <div class="clients-table">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Client Code</th>
+                                        <th>Name</th>
+                                        <th>Phone</th>
+                                        <th>Country</th>
+                                        <th>Subscription</th>
+                                        <th>Receipt</th>
+                                        <th>Status</th>
+                                        <th>Created Date</th>
+                                        <th>Connection</th>
+                                        <th>Connection Actions</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="clientsTableBody">
+                                    <!-- Clients will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Predictions Section -->
+                    <div id="predictionsSection" class="admin-section" style="display: none;">
+                        <h2>Predictions Management</h2>
+                        <div class="section-header">
+                            <button onclick="generateNewPrediction()" class="add-btn">
+                                <i class="fas fa-plus"></i> Generate Prediction
+                            </button>
+                            <select id="predictionFilter" onchange="filterPredictions()">
+                                <option value="all">All Predictions</option>
+                                <option value="active">Active</option>
+                                <option value="completed">Completed</option>
+                            </select>
+                        </div>
+                        
+                        <div class="predictions-grid" id="predictionsGrid">
+                            <!-- Predictions will be populated here -->
+                        </div>
+                    </div>
+                    
+                    <!-- Settings Section -->
+                    <div id="settingsSection" class="admin-section" style="display: none;">
+                        <h2>Settings</h2>
+                        <div class="settings-form">
+                            <div class="setting-group">
+                                <label>Prediction Algorithm</label>
+                                <select id="algorithmSelect">
+                                    <option value="random">Random</option>
+                                    <option value="pattern">Pattern Based</option>
+                                    <option value="ai">AI Enhanced</option>
+                                </select>
+                            </div>
+                            <div class="setting-group">
+                                <label>Update Frequency (minutes)</label>
+                                <input type="number" id="updateFrequency" value="5" min="1" max="60">
+                            </div>
+                            <div class="setting-group">
+                                <label>Success Rate Threshold (%)</label>
+                                <input type="number" id="successThreshold" value="70" min="0" max="100">
+                            </div>
+                            <button onclick="saveSettings()" class="save-btn">Save Settings</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Database Section -->
+                    <div id="databaseSection" class="admin-section" style="display: none;">
+                        <h2>Database Management</h2>
+                        
+                        <!-- Database Statistics -->
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <h3>Database Size</h3>
+                                <p id="dbSize">0 KB</p>
+                            </div>
+                            <div class="stat-card">
+                                <h3>Total Records</h3>
+                                <p id="totalRecords">0</p>
+                            </div>
+                            <div class="stat-card">
+                                <h3>Last Backup</h3>
+                                <p id="lastBackup">Never</p>
+                            </div>
+                            <div class="stat-card">
+                                <h3>Auto-save Status</h3>
+                                <p id="autoSaveStatus">Active</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Backup Management -->
+                        <div class="database-actions">
+                            <h3>Backup & Recovery</h3>
+                            <div class="action-buttons-grid">
+                                <button onclick="createBackup()" class="action-btn">
+                                    <i class="fas fa-save"></i> Create Backup
+                                </button>
+                                <button onclick="exportData()" class="action-btn">
+                                    <i class="fas fa-download"></i> Export JSON
+                                </button>
+                                <button onclick="exportToExcel()" class="action-btn">
+                                    <i class="fas fa-file-excel"></i> Export Excel
+                                </button>
+                                <button onclick="showImportModal()" class="action-btn">
+                                    <i class="fas fa-upload"></i> Import Data
+                                </button>
+                                <button onclick="showBackupRestoreModal()" class="action-btn">
+                                    <i class="fas fa-history"></i> Restore Backup
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Database Maintenance -->
+                        <div class="database-maintenance">
+                            <h3>Database Maintenance</h3>
+                            <div class="action-buttons-grid">
+                                <button onclick="cleanupDatabase()" class="action-btn">
+                                    <i class="fas fa-broom"></i> Cleanup Old Data
+                                </button>
+                                <button onclick="resetDatabase()" class="action-btn danger">
+                                    <i class="fas fa-trash"></i> Reset Database
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Available Backups -->
+                        <div class="backups-list">
+                            <h3>Available Backups</h3>
+                            <div id="backupsList" class="backups-container">
+                                <!-- Backups will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Client Interface -->
+        <div id="clientInterface" class="client-interface" style="display: none;">
+            <header class="client-header">
+                <div class="client-header-left">
+                    <button onclick="goBackToLogin()" class="back-btn">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <h1 class="brand-title"><i class="fas fa-plane"></i> Aviator Predictor vpn from Admin</h1>
+                </div>
+                <div class="client-info">
+                    <div class="connection-status-client">
+                        <span id="clientConnectionStatus" class="status-indicator connected">Connected</span>
+                    </div>
+                    <span id="clientName">Client</span>
+                    <button onclick="disconnectClient()" class="disconnect-btn">Disconnect</button>
+                </div>
+            </header>
+            
+            <div class="client-content vpn-client-content">
+                <!-- Attention Banner / Branding -->
+                <div class="attention-banner">
+                    <div class="brand-line">
+                        <span class="brand-page-name">Aviator Predictor vpn from Admin</span>
+                    </div>
+                    <div class="brand-images">
+                        <img src="assets/aviator-logo-1.png" alt="Aviator Predictor Badge" class="brand-badge" onerror="this.style.display='none'">
+                        <img src="assets/aviator-hero-2.jpg" alt="Aviator Predictor Hero" class="brand-hero" onerror="this.style.display='none'">
+                    </div>
+                </div>
+                <div class="vpn-client-details-panel">
+                    <h3><i class="fas fa-user"></i> Client Details</h3>
+                    <div class="vpn-client-details-grid">
+                        <div class="vpn-detail-item"><span class="vpn-detail-label">Name:</span> <span class="vpn-detail-value" id="clientDetailName">-</span></div>
+                        <div class="vpn-detail-item"><span class="vpn-detail-label">Phone:</span> <span class="vpn-detail-value" id="clientDetailPhone">-</span></div>
+                        <div class="vpn-detail-item"><span class="vpn-detail-label">Country:</span> <span class="vpn-detail-value" id="clientDetailCountry">-</span></div>
+                        <div class="vpn-detail-item"><span class="vpn-detail-label">Subscription:</span> <span class="vpn-detail-value" id="clientDetailSubscription">-</span></div>
+                        <div class="vpn-detail-item"><span class="vpn-detail-label">Client Code:</span> <span class="vpn-detail-value" id="clientDetailCode">-</span></div>
+                    </div>
+                </div>
+                <div class="vpn-connect-section">
+                    <button id="vpnConnectBtn" class="vpn-connect-btn disconnected" onclick="toggleConnection()">
+                        <i class="fas fa-power-off"></i>
+                        <span id="vpnConnectText">Connect</span>
+                    </button>
+                </div>
+                <div class="vpn-signal-transfer">
+                    <div class="signal-transfer-text">
+                        <i class="fas fa-satellite-dish"></i>
+                        <span>Transferring signals to <span id="clientCountrySignal">your country</span>...</span>
+                    </div>
+                    <div class="signal-animation">
+                        <div class="signal-wave"></div>
+                        <div class="signal-wave"></div>
+                        <div class="signal-wave"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Client Modal -->
+    <div id="addClientModal" class="modal" style="display: none;">
+        <div class="modal-content large-modal">
+            <span class="close" onclick="closeModal('addClientModal')">&times;</span>
+            <h2>Add New Client</h2>
+            <form id="addClientForm">
+                <div class="form-group">
+                    <label for="newClientName">Full Name *</label>
+                    <input type="text" id="newClientName" placeholder="Enter client's full name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="newClientPhone">Phone Number *</label>
+                    <input type="tel" id="newClientPhone" placeholder="Enter client's phone number" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="newClientCountry">Country *</label>
+                    <input type="text" id="newClientCountry" list="countriesList" placeholder="Type or select country" required>
+                    <datalist id="countriesList">
+                        <option value="United States">
+                        <option value="United Kingdom">
+                        <option value="Canada">
+                        <option value="Australia">
+                        <option value="Germany">
+                        <option value="France">
+                        <option value="Spain">
+                        <option value="Italy">
+                        <option value="Netherlands">
+                        <option value="Belgium">
+                        <option value="Switzerland">
+                        <option value="Austria">
+                        <option value="Sweden">
+                        <option value="Norway">
+                        <option value="Denmark">
+                        <option value="Finland">
+                        <option value="Poland">
+                        <option value="Czech Republic">
+                        <option value="Hungary">
+                        <option value="Romania">
+                        <option value="Bulgaria">
+                        <option value="Greece">
+                        <option value="Portugal">
+                        <option value="Ireland">
+                        <option value="New Zealand">
+                        <option value="Japan">
+                        <option value="South Korea">
+                        <option value="Singapore">
+                        <option value="Malaysia">
+                        <option value="Thailand">
+                        <option value="Vietnam">
+                        <option value="Philippines">
+                        <option value="Indonesia">
+                        <option value="India">
+                        <option value="Pakistan">
+                        <option value="Bangladesh">
+                        <option value="Sri Lanka">
+                        <option value="Nepal">
+                        <option value="Bhutan">
+                        <option value="Maldives">
+                        <option value="China">
+                        <option value="Hong Kong">
+                        <option value="Taiwan">
+                        <option value="Macau">
+                        <option value="Mongolia">
+                        <option value="North Korea">
+                        <option value="Russia">
+                        <option value="Ukraine">
+                        <option value="Belarus">
+                        <option value="Lithuania">
+                        <option value="Latvia">
+                        <option value="Estonia">
+                        <option value="Moldova">
+                        <option value="Georgia">
+                        <option value="Armenia">
+                        <option value="Azerbaijan">
+                        <option value="Kazakhstan">
+                        <option value="Uzbekistan">
+                        <option value="Kyrgyzstan">
+                        <option value="Tajikistan">
+                        <option value="Turkmenistan">
+                        <option value="Afghanistan">
+                        <option value="Iran">
+                        <option value="Iraq">
+                        <option value="Syria">
+                        <option value="Lebanon">
+                        <option value="Jordan">
+                        <option value="Israel">
+                        <option value="Palestine">
+                        <option value="Saudi Arabia">
+                        <option value="Yemen">
+                        <option value="Oman">
+                        <option value="United Arab Emirates">
+                        <option value="Qatar">
+                        <option value="Kuwait">
+                        <option value="Bahrain">
+                        <option value="Egypt">
+                        <option value="Libya">
+                        <option value="Tunisia">
+                        <option value="Algeria">
+                        <option value="Morocco">
+                        <option value="Sudan">
+                        <option value="South Sudan">
+                        <option value="Ethiopia">
+                        <option value="Eritrea">
+                        <option value="Djibouti">
+                        <option value="Somalia">
+                        <option value="Kenya">
+                        <option value="Uganda">
+                        <option value="Tanzania">
+                        <option value="Rwanda">
+                        <option value="Burundi">
+                        <option value="Democratic Republic of the Congo">
+                        <option value="Republic of the Congo">
+                        <option value="Gabon">
+                        <option value="Equatorial Guinea">
+                        <option value="Cameroon">
+                        <option value="Central African Republic">
+                        <option value="Chad">
+                        <option value="Niger">
+                        <option value="Nigeria">
+                        <option value="Benin">
+                        <option value="Togo">
+                        <option value="Ghana">
+                        <option value="Ivory Coast">
+                        <option value="Liberia">
+                        <option value="Sierra Leone">
+                        <option value="Guinea">
+                        <option value="Guinea-Bissau">
+                        <option value="Senegal">
+                        <option value="Gambia">
+                        <option value="Mauritania">
+                        <option value="Mali">
+                        <option value="Burkina Faso">
+                        <option value="Cape Verde">
+                        <option value="Brazil">
+                        <option value="Argentina">
+                        <option value="Chile">
+                        <option value="Peru">
+                        <option value="Colombia">
+                        <option value="Venezuela">
+                        <option value="Ecuador">
+                        <option value="Bolivia">
+                        <option value="Paraguay">
+                        <option value="Uruguay">
+                        <option value="Guyana">
+                        <option value="Suriname">
+                        <option value="French Guiana">
+                        <option value="Mexico">
+                        <option value="Guatemala">
+                        <option value="Belize">
+                        <option value="El Salvador">
+                        <option value="Honduras">
+                        <option value="Nicaragua">
+                        <option value="Costa Rica">
+                        <option value="Panama">
+                        <option value="Cuba">
+                        <option value="Jamaica">
+                        <option value="Haiti">
+                        <option value="Dominican Republic">
+                        <option value="Puerto Rico">
+                        <option value="Trinidad and Tobago">
+                        <option value="Barbados">
+                        <option value="Bahamas">
+                        <option value="Antigua and Barbuda">
+                        <option value="Saint Kitts and Nevis">
+                        <option value="Dominica">
+                        <option value="Saint Lucia">
+                        <option value="Saint Vincent and the Grenadines">
+                        <option value="Grenada">
+                        <option value="Other">
+                    </datalist>
+                </div>
+                
+                <div class="form-group">
+                    <label for="newClientSubscription">Subscription Period *</label>
+                    <select id="newClientSubscription" required>
+                        <option value="">Select subscription period</option>
+                        <option value="3 Months">3 Months</option>
+                        <option value="6 Months">6 Months</option>
+                        <option value="12 Months">12 Months</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="newClientReceipt">Payment Receipt *</label>
+                    <div class="file-upload-container">
+                        <input type="file" id="newClientReceipt" accept="image/*,.pdf" required>
+                        <div class="file-upload-info">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>Upload payment receipt (image or PDF)</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="newClientCode">Client Code (Optional)</label>
+                    <input type="text" id="newClientCode" placeholder="Leave empty for auto-generation">
+                    <small>If left empty, a unique code will be generated automatically</small>
+                </div>
+                
+                <button type="submit" class="submit-btn">Register & Generate Code</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Client Modal -->
+    <div id="editClientModal" class="modal" style="display: none;">
+        <div class="modal-content large-modal">
+            <span class="close" onclick="closeModal('editClientModal')">&times;</span>
+            <h2>Edit Client</h2>
+            <form id="editClientForm">
+                <div class="form-group">
+                    <label for="editClientName">Full Name *</label>
+                    <input type="text" id="editClientName" placeholder="Enter client's full name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editClientPhone">Phone Number *</label>
+                    <input type="tel" id="editClientPhone" placeholder="Enter client's phone number" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editClientCountry">Country *</label>
+                    <input type="text" id="editClientCountry" list="countriesList" placeholder="Type or select country" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editClientSubscription">Subscription Period *</label>
+                    <select id="editClientSubscription" required>
+                        <option value="">Select subscription period</option>
+                        <option value="3 Months">3 Months</option>
+                        <option value="6 Months">6 Months</option>
+                        <option value="12 Months">12 Months</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editClientStatus">Status *</label>
+                    <select id="editClientStatus" required>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editClientReceipt">Payment Receipt</label>
+                    <div class="file-upload-container">
+                        <input type="file" id="editClientReceipt" accept="image/*,.pdf">
+                        <div class="file-upload-info">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>Upload new payment receipt (image or PDF) - Optional</p>
+                        </div>
+                    </div>
+                    <small>Leave empty to keep current receipt</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editClientCode">Client Code *</label>
+                    <input type="text" id="editClientCode" placeholder="Client code" required readonly>
+                    <small>Client code cannot be changed</small>
+                </div>
+                
+                <button type="submit" class="submit-btn">Update Client</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Client Registration Modal -->
+    <div id="clientRegistrationModal" class="modal" style="display: none;">
+        <div class="modal-content large-modal">
+            <span class="close" onclick="closeModal('clientRegistrationModal')">&times;</span>
+            <h2>Client Registration</h2>
+            <form id="clientRegistrationForm">
+                <div class="form-group">
+                    <label for="regClientName">Full Name *</label>
+                    <input type="text" id="regClientName" placeholder="Enter your full name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="regClientPhone">Phone Number *</label>
+                    <input type="tel" id="regClientPhone" placeholder="Enter your phone number" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="regClientCountry">Country *</label>
+                    <input type="text" id="regClientCountry" list="countriesList" placeholder="Type or select country" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="regClientSubscription">Subscription Period *</label>
+                    <select id="regClientSubscription" required>
+                        <option value="">Select subscription period</option>
+                        <option value="3 Months">3 Months</option>
+                        <option value="6 Months">6 Months</option>
+                        <option value="12 Months">12 Months</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="regClientReceipt">Payment Receipt *</label>
+                    <div class="file-upload-container">
+                        <input type="file" id="regClientReceipt" accept="image/*,.pdf" required>
+                        <div class="file-upload-info">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <span>Click to upload receipt (Image or PDF)</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="regClientCode">Client Code (Optional)</label>
+                    <input type="text" id="regClientCode" placeholder="Enter custom client code (leave empty for auto-generated)">
+                </div>
+                
+                <button type="submit" class="submit-btn">Register & Connect</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Import Data Modal -->
+    <div id="importDataModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('importDataModal')">&times;</span>
+            <h2>Import Data</h2>
+            <div class="form-group">
+                <label for="importFile">Select JSON file to import</label>
+                <input type="file" id="importFile" accept=".json" required>
+                <small>Select a previously exported JSON file to restore data</small>
+            </div>
+            <div class="warning-message">
+                <i class="fas fa-exclamation-triangle"></i>
+                <strong>Warning:</strong> This will replace all current data. A backup will be created automatically.
+            </div>
+            <button onclick="importData()" class="submit-btn">Import Data</button>
+        </div>
+    </div>
+
+    <!-- Backup Restore Modal -->
+    <div id="backupRestoreModal" class="modal" style="display: none;">
+        <div class="modal-content large-modal">
+            <span class="close" onclick="closeModal('backupRestoreModal')">&times;</span>
+            <h2>Restore from Backup</h2>
+            <div class="backups-list-modal">
+                <p>Select a backup to restore:</p>
+                <div id="backupsListModal" class="backups-list-items">
+                    <!-- Backup items will be populated here -->
+                </div>
+            </div>
+            <div class="warning-message">
+                <i class="fas fa-exclamation-triangle"></i>
+                <strong>Warning:</strong> This will replace all current data with the selected backup.
+            </div>
+        </div>
+    </div>
+
+    <script src="database.js"></script>
+    <script src="script.js"></script>
+</body>
+</html> 
